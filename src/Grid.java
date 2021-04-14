@@ -1,71 +1,140 @@
 public class Grid {
 
-    private static final int WIDTH = 10;
-    private static final int HEIGHT = 10;
+  private static final int WIDTH = 10;
+  private static final int HEIGHT = 10;
 
-    private final Piece[][] grid = new Piece[HEIGHT][WIDTH];
+  private final Piece[][] grid = new Piece[HEIGHT][WIDTH];
 
-    public Grid() {
-        // TODO: Question 2a.
+  public Grid() {
+    for (int i = 0; i < grid.length; i++) {
+      for (int j = 0; j < grid[i].length; j++) {
+        grid[i][j] = Piece.WATER;
+      }
     }
+  }
 
-    public boolean canPlace(Coordinate c, int size, boolean isDown) {
-        return false; // TODO: delete this line for Question 2b.
+  public boolean canPlace(Coordinate c, int size, boolean isDown) {
+    if (isDown) {
+      return canPlaceVertically(c, size);
+    } else {
+      return canPlaceHorizontally(c, size);
     }
+  }
 
-    public void placeShip(Coordinate c, int size, boolean isDown) {
-        // TODO: Question 2c.
+  private boolean canPlaceVertically(Coordinate c, int size) {
+    boolean result = true;
+    for (int i = 0; i < size; i++) {
+      result = result && isFreePlace(c.getRow() + i, c.getColumn());
     }
+    return result;
+  }
 
-    public boolean wouldAttackSucceed(Coordinate c) {
-        return false; // TODO: delete this line for Question 3a.
+  private boolean canPlaceHorizontally(Coordinate c, int size) {
+    boolean result = true;
+    for (int i = 0; i < size; i++) {
+      result = result && isFreePlace(c.getRow(), c.getColumn() + i);
     }
+    return result;
+  }
 
-    public void attackCell(Coordinate c) {
-        // TODO: Question 3b.
+  private boolean isFreePlace(int row, int column) {
+    if (row >= HEIGHT || column >= WIDTH) {
+      return false;
+    } else {
+      return grid[row][column] == Piece.WATER;
     }
-
-    public boolean areAllSunk() {
-        return false; // TODO: delete this line for Question 3c.
+  }
+  public void placeShip(Coordinate c, int size, boolean isDown) {
+    assert canPlace(c, size, isDown);
+    if (isDown) {
+      placeShipVertically(c, size);
+    } else {
+      placeShipHorizontally(c, size);
     }
+  }
 
-    public String toPlayerString() {
-        return null; // TODO: delete this line for Question 4.
+  private void placeShipVertically(Coordinate c, int size) {
+    for (int i = 0; i < size; i++) {
+      grid[c.getRow() + i][c.getColumn()] = Piece.SHIP;
     }
+  }
 
-    @Override
-    public String toString() {
-        return renderGrid(grid);
+  private void placeShipHorizontally(Coordinate c, int size) {
+    for (int i = 0; i < size; i++) {
+      grid[c.getRow()][c.getColumn() + i] = Piece.SHIP;
     }
+  }
 
-    private static String renderGrid(Piece[][] grid) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(" 0123456789\n");
-        for (int i = 0; i < grid.length; i++) {
-            sb.append((char) ('A' + i));
-            for (int j = 0; j < grid[i].length; j++) {
-                if (grid[i][j] == null) {
-                    return "!";
-                }
-                switch (grid[i][j]) {
-                case SHIP:
-                    sb.append('#');
-                    break;
-                case DAMAGED_SHIP:
-                    sb.append('*');
-                    break;
-                case MISS:
-                    sb.append('o');
-                    break;
-                case WATER:
-                    sb.append('.');
-                    break;
-                }
+  public boolean wouldAttackSucceed(Coordinate c) {
+    return grid[c.getRow()][c.getColumn()] == Piece.SHIP;
+  }
 
-            }
-            sb.append('\n');
+  public void attackCell(Coordinate c) {
+    if (wouldAttackSucceed(c)) {
+      replacePiece(c, Piece.DAMAGED_SHIP);
+    } else if (getPiece(c) == Piece.WATER) {
+      replacePiece(c, Piece.MISS);
+    }
+  }
+
+  private void replacePiece(Coordinate c, Piece newPiece) {
+    grid[c.getRow()][c.getColumn()] = newPiece;
+  }
+
+  private Piece getPiece(Coordinate c) {
+    return grid[c.getRow()][c.getColumn()];
+  }
+
+  public boolean areAllSunk() {
+    boolean result = true;
+    for (Piece[] row : grid) {
+      for (Piece piece : row) {
+        // If all of the ships are sunk then neither of the pieces will be Piece.SHIP.
+        result = result && piece != Piece.SHIP;
+      }
+    }
+    return result;
+  }
+
+  public String toPlayerString() {
+    Piece[][] clone = Util.deepClone(grid);
+    Util.hideShips(clone);
+    return renderGrid(clone);
+  }
+
+  @Override
+  public String toString() {
+    return renderGrid(grid);
+  }
+
+  private static String renderGrid(Piece[][] grid) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(" 0123456789\n");
+    for (int i = 0; i < grid.length; i++) {
+      sb.append((char) ('A' + i));
+      for (int j = 0; j < grid[i].length; j++) {
+        if (grid[i][j] == null) {
+          return "!";
+        }
+        switch (grid[i][j]) {
+          case SHIP:
+            sb.append('#');
+            break;
+          case DAMAGED_SHIP:
+            sb.append('*');
+            break;
+          case MISS:
+            sb.append('o');
+            break;
+          case WATER:
+            sb.append('.');
+            break;
         }
 
-        return sb.toString();
+      }
+      sb.append('\n');
     }
+
+    return sb.toString();
+  }
 }
