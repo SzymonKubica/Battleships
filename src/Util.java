@@ -23,9 +23,9 @@ public class Util {
   }
 
   public static void hideShips(Piece[][] grid) {
-    for (Piece[] row : grid) {
-      for (Piece piece : row) {
-        piece = hideShip(piece);
+    for (int i = 0; i < grid.length; i++) {
+      for(int j = 0; j < grid[i].length; j++) {
+        grid[i][j] = hideShip(grid[i][j]);
       }
     }
   }

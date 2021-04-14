@@ -15,4 +15,18 @@ public class Coordinate {
   public int getColumn() {
     return column;
   }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof  Coordinate) {
+      return row == ((Coordinate) other).getRow() && column == ((Coordinate) other).getColumn();
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return row * column;
+  }
 }

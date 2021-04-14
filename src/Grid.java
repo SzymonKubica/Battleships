@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Grid {
 
   private static final int WIDTH = 10;
@@ -6,10 +8,8 @@ public class Grid {
   private final Piece[][] grid = new Piece[HEIGHT][WIDTH];
 
   public Grid() {
-    for (int i = 0; i < grid.length; i++) {
-      for (int j = 0; j < grid[i].length; j++) {
-        grid[i][j] = Piece.WATER;
-      }
+    for (Piece[] row : grid) {
+      Arrays.fill(row, Piece.WATER);
     }
   }
 
@@ -41,9 +41,26 @@ public class Grid {
     if (row >= HEIGHT || column >= WIDTH) {
       return false;
     } else {
-      return grid[row][column] == Piece.WATER;
+      return getPiece(row, column) == Piece.WATER && hasFreeSpaceAround(row, column);
     }
   }
+
+  private boolean hasFreeSpaceAround(int row, int column) {
+    boolean result = true;
+    for (int i = -1; i <= 1; i++) {
+      for (int j = -1; j <= 1; j++) {
+        if (isWithinBounds(row + i, column + j)) {
+          result = result && getPiece(row + i, column + j) == Piece.WATER;
+        }
+      }
+    }
+    return result;
+  }
+
+  public boolean isWithinBounds(int row, int column) {
+    return 0 <= row && row <= 9 && 0 <= column && column <= 9;
+  }
+
   public void placeShip(Coordinate c, int size, boolean isDown) {
     assert canPlace(c, size, isDown);
     if (isDown) {
@@ -66,7 +83,7 @@ public class Grid {
   }
 
   public boolean wouldAttackSucceed(Coordinate c) {
-    return grid[c.getRow()][c.getColumn()] == Piece.SHIP;
+    return getPiece(c) == Piece.SHIP;
   }
 
   public void attackCell(Coordinate c) {
@@ -82,7 +99,11 @@ public class Grid {
   }
 
   private Piece getPiece(Coordinate c) {
-    return grid[c.getRow()][c.getColumn()];
+    return getPiece(c.getRow(), c.getColumn());
+  }
+
+  private Piece getPiece(int row, int column) {
+    return grid[row][column];
   }
 
   public boolean areAllSunk() {
@@ -117,18 +138,10 @@ public class Grid {
           return "!";
         }
         switch (grid[i][j]) {
-          case SHIP:
-            sb.append('#');
-            break;
-          case DAMAGED_SHIP:
-            sb.append('*');
-            break;
-          case MISS:
-            sb.append('o');
-            break;
-          case WATER:
-            sb.append('.');
-            break;
+          case SHIP -> sb.append('#');
+          case DAMAGED_SHIP -> sb.append('*');
+          case MISS -> sb.append('o');
+          case WATER -> sb.append('.');
         }
 
       }
